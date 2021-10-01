@@ -1,0 +1,25 @@
+{
+  "name": "octo-disco",
+  "version": "1.0.0",
+  "description": "a simple blog using node.js, with a login, logout, and restrict access, connected to database using mysql",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/adanngrha/octo-disco.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/adanngrha/octo-disco/issues"
+  },
+  "homepage": "https://github.com/adanngrha/octo-disco#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "mysql": "^2.18.1",
+    "nodaemon": "0.0.5"
+  }
+}
