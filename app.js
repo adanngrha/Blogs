@@ -24,8 +24,10 @@ app.use(
 app.use((req, res, next) => {
   if (req.session.userId === undefined) {
     res.locals.username = 'Tamu';
+    res.locals.isLoggedIn = false;
   } else {
     res.locals.username = req.session.username;
+    res.locals.isLoggedIn = true;
   }
   next();
 });
@@ -77,6 +79,12 @@ app.post('/login', (req, res) => {
       }
     }
   );
+});
+
+app.get('/logout', (req, res) => {
+  req.session.destroy(error => {
+    res.redirect('/list');
+  });
 });
 
 app.listen(3000);
