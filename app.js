@@ -57,25 +57,80 @@ app.get('/article/:id', (req, res) => {
 });
 
 app.get('/signup', (req, res) => {
-  res.render('signup.ejs');
+  res.render('signup.ejs', { errors: [] });
 });
 
-app.post('/signup', (req, res) => {
-  const username = req.body.username;
-  const email = req.body.email;
-  const password = req.body.password;
-  connection.query(
-    'INSERT INTO users (username, email, password) VALUES (?, ?, ?)',
-    [username, email, password],
-    (error, results) => {
-      // Tetapkan ID dari pengguna baru yang terdaftar pada req.session.userId
-      req.session.userId = results.insertId;
-      // Tetapkan `username` dari pengguna baru yang terdaftar pada req.session.username
-      req.session.username = username;
-      res.redirect('/list');
+app.post('/signup', 
+  (req, res, next) => {
+    console.log('Pemeriksaan nilai input kosong');
+    const username = req.body.username;
+    const email = req.body.email;
+    const password = req.body.password;
+    const errors = [];
+
+    if (username === '') {
+      errors.push('Nama Pengguna kosong');
     }
-  );
-});
+
+    if (email === '') {
+      errors.push('Email kosong');
+    }
+
+    if (password === '') {
+      errors.push('Kata Sandi kosong');
+    }
+
+    if (errors.length > 0) {
+      res.render('signup.ejs', { errors: errors });
+    } else {
+      next();
+    }
+  },
+  (req, res, next) => {
+    console.log('Pemeriksaan email duplikat');
+    // Definisikan constant email
+    const email = req.body.email;
+    const errors = [];
+    // Definisikan array `errors`
+   
+    
+    // Tempelkan code yang diberikan untuk memeriksa email-email duplikat
+    connection.query(
+      'SELECT * FROM users WHERE email = ?',
+      [email],
+      (error, results) => {
+        if (results.length > 0) {
+          // Tambahkan "Gagal mendaftarkan pengguna" pada array `errors`
+          errors.push('Gagal mendaftarkan pengguna');
+          
+          // Gunakan res.render untuk menampilkan halaman Pendaftaran
+          res.render('signup.ejs', {errors: errors});
+          
+        } else {
+          // Panggil function `next`
+          next();
+        }
+      }
+    );
+    
+    // Hapuslah 1 baris code di bawah
+  },
+  (req, res) => {
+    console.log('Pendaftaran');
+    const username = req.body.username;
+    const email = req.body.email;
+    const password = req.body.password;
+    connection.query(
+      'INSERT INTO users (username, email, password) VALUES (?, ?, ?)',
+      [username, email, password],
+      (error, results) => {
+        req.session.userId = results.insertId;
+        req.session.username = username;
+        res.redirect('/list');
+      }
+    );
+  }
+);
 
 app.get('/login', (req, res) => {
   res.render('login.ejs');
