@@ -6,9 +6,10 @@
       <li><a href="/list">Artikel</a></li>
       <% if (locals.isLoggedIn) { %>
         <li><a href="/logout">Logout</a></li>
-        <% } else { %>
+      <% } else { %>
+        <li><a href="/signup">Pendaftaran</a></li>
         <li><a href="/login">Login</a></li>
-       <% } %>
+      <% } %>
     </ul>
   </div>
   <p>Ken Belajar Blog</p>

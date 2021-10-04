@@ -9,7 +9,7 @@ app.use(express.urlencoded({extended: false}));
 const connection = mysql.createConnection({
   host: 'localhost',
   user: 'root',
-  password: 'adanrootsql123',
+  password: 'adanrootsql123',	
   database: 'octo_disco'
 });
 
@@ -52,6 +52,27 @@ app.get('/article/:id', (req, res) => {
     [id],
     (error, results) => {
       res.render('article.ejs', { article: results[0] });
+    }
+  );
+});
+
+app.get('/signup', (req, res) => {
+  res.render('signup.ejs');
+});
+
+app.post('/signup', (req, res) => {
+  const username = req.body.username;
+  const email = req.body.email;
+  const password = req.body.password;
+  connection.query(
+    'INSERT INTO users (username, email, password) VALUES (?, ?, ?)',
+    [username, email, password],
+    (error, results) => {
+      // Tetapkan ID dari pengguna baru yang terdaftar pada req.session.userId
+      req.session.userId = results.insertId;
+      // Tetapkan `username` dari pengguna baru yang terdaftar pada req.session.username
+      req.session.username = username;
+      res.redirect('/list');
     }
   );
 });
