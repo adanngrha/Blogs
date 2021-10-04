@@ -2,6 +2,7 @@ const express = require('express');
 const mysql = require('mysql');
 const session = require('express-session');
 const app = express();
+const bcrypt = require('bcrypt');
 
 app.use(express.static('public'));
 app.use(express.urlencoded({extended: false}));
@@ -88,47 +89,37 @@ app.post('/signup',
   },
   (req, res, next) => {
     console.log('Pemeriksaan email duplikat');
-    // Definisikan constant email
     const email = req.body.email;
     const errors = [];
-    // Definisikan array `errors`
-   
-    
-    // Tempelkan code yang diberikan untuk memeriksa email-email duplikat
     connection.query(
-      'SELECT * FROM users WHERE email = ?',
-      [email],
-      (error, results) => {
-        if (results.length > 0) {
-          // Tambahkan "Gagal mendaftarkan pengguna" pada array `errors`
-          errors.push('Gagal mendaftarkan pengguna');
-          
-          // Gunakan res.render untuk menampilkan halaman Pendaftaran
-          res.render('signup.ejs', {errors: errors});
-          
-        } else {
-          // Panggil function `next`
-          next();
+        'SELECT * FROM users WHERE email = ?',
+        [email],
+        (error, results) => {
+          if (results.length > 0) {
+            errors.push('Failed to register user');
+            res.render('signup.ejs', { errors: errors });
+          } else {
+            next();
+          }
         }
-      }
-    );
-    
-    // Hapuslah 1 baris code di bawah
+      );    
   },
   (req, res) => {
     console.log('Pendaftaran');
     const username = req.body.username;
     const email = req.body.email;
     const password = req.body.password;
-    connection.query(
-      'INSERT INTO users (username, email, password) VALUES (?, ?, ?)',
-      [username, email, password],
-      (error, results) => {
-        req.session.userId = results.insertId;
-        req.session.username = username;
-        res.redirect('/list');
-      }
-    );
+    bcrypt.hash(password, 10, (error, hash) => {
+      connection.query(
+        'INSERT INTO users (username, email, password) VALUES (?, ?, ?)',
+        [username, email, hash],
+        (error, results) => {
+          req.session.userId = results.insertId;
+          req.session.username = username;
+          res.redirect('/list');
+        }
+      );
+    });
   }
 );
 
@@ -143,13 +134,24 @@ app.post('/login', (req, res) => {
     [email],
     (error, results) => {
       if (results.length > 0) {
-        if (req.body.password === results[0].password){
-          req.session.userId = results[0].id;
-          req.session.username = results[0].username;
-          res.redirect('/list');
-        } else {
-          res.redirect('/login');
-        }    
+        // Definisikan constant `plain`
+        const plain = req.body.password;
+        
+        // Definisikan constant `hash`
+        const hash = results[0].password;
+        
+        // Tambahkan sebuah method `compare` untuk membandingkan kata sandi
+        bcrypt.compare(plain, hash, (error, isEqual) => {
+          if (isEqual) {
+            req.session.userId = results[0].id;
+            req.session.username = results[0].username;
+            res.redirect('/list');
+          } else {
+            res.redirect('/login');
+          }
+        });
+        // Hapus code di bawah
+        // Hapus code di atas
       } else {
         res.redirect('/login');
       }
